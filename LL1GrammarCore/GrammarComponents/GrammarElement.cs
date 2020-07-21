@@ -1,13 +1,13 @@
-﻿using LL1GrammarCore.Interfaces;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
-namespace LL1GrammarCore.GrammarComponents
+namespace LL1GrammarCore
 {
     /// <summary>
     /// Представляет собой один элемент правой части правила грамматики. Содержит либо ссылку на не терминал, либо строковой терминал.
     /// </summary>
-    internal class GrammarElement : IGrammarElement
+    internal class GrammarElement
     {
         /// <summary>
         /// Тип элемента.
@@ -16,11 +16,15 @@ namespace LL1GrammarCore.GrammarComponents
         /// <summary>
         /// Ссылка на не терминал.
         /// </summary>
-        public IGrammarRule Rule { get; private set; }
+        public GrammarRule Rule { get; private set; }
         /// <summary>
         /// Строковой терминал.
         /// </summary>
         public string Characters { get; private set; }
+        /// <summary>
+        /// Действия.
+        /// </summary>
+        public List<Action<object>> Actions { get; private set; } = new List<Action<object>>();
 
         /// <summary>
         /// Создать экземпляр элемента правила, который является пустой цепочкой.
@@ -33,16 +37,17 @@ namespace LL1GrammarCore.GrammarComponents
         /// <summary>
         /// Создать экземпляр элемента правила, который является ссылкой на другое правило-нетерминал.
         /// </summary>
-        public GrammarElement(IGrammarRule rule)
+        public GrammarElement(GrammarRule rule, List<Action<object>> actions = null)
         {
             Type = ElementType.NonTerminal;
             Rule = rule;
+            CheckAndReadActions(actions);
         }
 
         /// <summary>
         /// Создать экземпляр элемента правила, который является терминалом.
         /// </summary>
-        public GrammarElement(string characters)
+        public GrammarElement(string characters, List<Action<object>> actions = null)
         {
             Type = ElementType.Terminal;
 
@@ -60,6 +65,7 @@ namespace LL1GrammarCore.GrammarComponents
                     Characters = characters;
                     break;
             }
+            CheckAndReadActions(actions);
         }
 
         /// <summary>
@@ -67,7 +73,7 @@ namespace LL1GrammarCore.GrammarComponents
         /// </summary>
         /// <param name="startChar">Начальный символ диапазона.</param>
         /// <param name="endChar">Конечный символ диапазона.</param>
-        public GrammarElement(char startChar, char endChar)
+        public GrammarElement(char startChar, char endChar, List<Action<object>> actions = null)
         {
             if (startChar > endChar)
                 throw new System.Exception($"Неверный порядок символов в диапазоне.{Environment.NewLine}" +
@@ -78,9 +84,13 @@ namespace LL1GrammarCore.GrammarComponents
             //Получаем диапазон
             Characters = string.Join(string.Empty, Enumerable.Range(startChar, endChar - startChar + 1).Select(c => (char)c));
 
-            //Если диапазон начинается с большой буквы и заканчивается прописной, то согласно таблицы ASCII удаляем лишние символы
-            if (startChar <= 'Z' && endChar >= 'a')
-                Characters = Characters.Remove(Characters.IndexOf('['), 6);
+            CheckAndReadActions(actions);
+        }
+
+        private void CheckAndReadActions(List<Action<object>> actions)
+        {
+            if (actions != null)
+                Actions = actions;
         }
 
         public override bool Equals(object obj)
@@ -100,7 +110,7 @@ namespace LL1GrammarCore.GrammarComponents
                     return Rule.ToString();
 
                 case ElementType.Range:
-                    return $"Диапазон({Characters.First()}, {Characters.Last()})";
+                    return $"Диапазон от {Characters.First()} до {Characters.Last()}";
 
                 case ElementType.Terminal:
                     return Characters;

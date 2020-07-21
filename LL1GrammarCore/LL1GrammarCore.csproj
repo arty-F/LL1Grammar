@@ -41,12 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionsContainer.cs" />
     <Compile Include="ElementType.cs" />
-    <Compile Include="Interfaces\IGrammar.cs" />
-    <Compile Include="Interfaces\IGrammarElement.cs" />
-    <Compile Include="Interfaces\IGrammarRule.cs" />
-    <Compile Include="Interfaces\IGrammarRulePart.cs" />
-    <Compile Include="Interfaces\ISpecialSymbols.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Grammar.cs" />
     <Compile Include="GrammarComponents\GrammarRule.cs" />

@@ -1,12 +1,11 @@
-﻿using LL1GrammarCore.Interfaces;
-using System;
+﻿using System;
 
 namespace LL1GrammarCore
 {
     /// <summary>
     /// Обертка для специальных символов грамматики.
     /// </summary>
-    public class SpecialSymbols : ISpecialSymbols
+    public class SpecialSymbols
     {
         /// <summary>
         /// Строка-разделитель, между левой и правой частью грамматики.

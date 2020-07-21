@@ -35,28 +35,28 @@ namespace LL1Grammar
         }
         private void Analyze()
         {
-            bool result = false;
-            if (Splitter == "" || Or == "" || Range == "" || Empty == "")
-                MessageBox.Show("Заполните все поля специальных символов.");
-            else
-            {
-                try
-                {
-                    Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()));
-                    result = gram.ValidateData(InputData);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
+            //bool result = false;
+            //if (Splitter == "" || Or == "" || Range == "" || Empty == "")
+            //    MessageBox.Show("Заполните все поля специальных символов.");
+            //else
+            //{
+            //    try
+            //    {
+            //        Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()));
+            //        result = gram.ValidateData(InputData);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        MessageBox.Show(ex.Message);
+            //    }
 
-                if (result)
-                    Result = "Разбор завершен успешно.";
-                else
-                    Result = "Во время разбора возникла ошибка.";
+            //    if (result)
+            //        Result = "Разбор завершен успешно.";
+            //    else
+            //        Result = "Во время разбора возникла ошибка.";
 
-                OnPropertyChanged(nameof(Result));
-            }
+            //    OnPropertyChanged(nameof(Result));
+            //}
         }
 
         private ICommand clearCmd;

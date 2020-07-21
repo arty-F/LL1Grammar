@@ -1,6 +1,4 @@
-﻿using LL1GrammarCore.GrammarComponents;
-using LL1GrammarCore.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,140 +8,168 @@ namespace LL1GrammarCore
     /// <summary>
     /// Обертка для работы с грамматикой. Содержит список правил, специальные символы грамматики и метод для валидации строки согласно хранящимся правилам.
     /// </summary>
-    public class Grammar : IGrammar
+    public class Grammar
     {
-        private List<IGrammarRule> rules { get; set; } = new List<IGrammarRule>();  //Список правил грамматики
-        private ISpecialSymbols specialSymbols;
+        private List<GrammarRule> rules { get; set; } = new List<GrammarRule>();  //Список правил грамматики
+        private SpecialSymbols specialSymbols;
 
-        private bool isNameReading = false;
-        private List<StringBuilder> names = new List<StringBuilder> { new StringBuilder() };
 
-        /// <summary>
-        /// Создать новый экземпляр грамматики. Необходимо описание грамматики в виде строки, а также
-        /// класс реализующий <see cref="ISpecialSymbols"/>, содержащий специальные символы грамматики.
-        /// </summary>
-        /// <param name="grammar">Строковое описание грамматики.</param>
-        /// <param name="specialSymbols">Специальные символы грамматики.</param>
-        public Grammar(string grammar, ISpecialSymbols specialSymbols)
+        public Grammar(string grammar, SpecialSymbols specialSymbols)
         {
-            this.specialSymbols = specialSymbols;
+            var splittedGrammar = grammar.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
 
-            try
-            {
-                //Разбиваем грамматику по строкам и добавляем в коллекцию правил экземпляры правил
-                foreach (var line in grammar.Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
-                    rules.Add(new GrammarRule(line, specialSymbols));
+            foreach (var line in splittedGrammar)
+                rules.Add(new GrammarRule(line, specialSymbols));
 
-                //Теперь, когда нетерминалы найдены, заполним правые части грамматики
-                foreach (var rule in rules)
-                    rule.BuildRightPart(rules, specialSymbols);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{ex.ToString() + Environment.NewLine + Environment.NewLine}" +
-                                    $"Состояние грамматики:{Environment.NewLine + this.ToString()}");
-            }
+            foreach (var rule in rules)
+                rule.BuildRightPart(rules);
         }
 
         /// <summary>
-        /// Проверка входной строки на соответствие правилам грамматики.
+        /// Возвращает коллекцию левых частей правил грамматики
         /// </summary>
-        /// <param name="data">Строка с данными для проверки.</param>
-        public bool ValidateData(string data)
+        /// <param name="grammar"></param>
+        /// <returns></returns>
+        private List<string> GetLeftParts(string[] grammar)
         {
-            var remainingData = new StringBuilder(data);
-            try
+            List<string> leftParts = new List<string>();
+            foreach (var line in grammar)
             {
-                DoValidate(remainingData, rules.First());
+                var s = line.Split(new string[] { specialSymbols.Splitter }, StringSplitOptions.None);
+                if (s.Length != 2)
+                    
+                if (!leftParts.Contains(s.First()))
+                    leftParts.Add(s.First());
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.ToString() + $"{Environment.NewLine + Environment.NewLine}");
-            }
-
-            if (remainingData.Length > 0)
-                throw new Exception($"Разбор завершен, при этом часть строки осталась неразобранна:{Environment.NewLine + remainingData.ToString()}");
-
-            return true;
+            return leftParts;
         }
 
-        //Рекурсивная валидация строки согласно заданной грамматики
-        private void DoValidate(StringBuilder remainingData, IGrammarRule rule)
-        {
-            var grammarRulePart = rule.GetNext(remainingData.ToString());   //Находим следующее подправило
+        ///// <summary>
+        ///// Создать новый экземпляр грамматики. Необходимо описание грамматики в виде строки, а также
+        ///// класс реализующий <see cref="ISpecialSymbols"/>, содержащий специальные символы грамматики.
+        ///// </summary>
+        ///// <param name="grammar">Строковое описание грамматики.</param>
+        ///// <param name="specialSymbols">Специальные символы грамматики.</param>
+        //public Grammar(string grammar, SpecialSymbols specialSymbols)
+        //{
+        //    this.specialSymbols = specialSymbols;
 
-            if (grammarRulePart == null)
-                throw new Exception($"Данная строка не является частью грамматики. Из правила:{Environment.NewLine + rule.ToString() + Environment.NewLine}" +
-                                    $"Невозможно осуществить разбор оставшейся части грамматики: {Environment.NewLine + remainingData.ToString() + Environment.NewLine}");
+        //    try
+        //    {
+        //        //Разбиваем грамматику по строкам и добавляем в коллекцию правил экземпляры правил
+        //        foreach (var line in grammar.Split(new string[] { Environment.NewLine }, StringSplitOptions.None))
+        //            rules.Add(new GrammarRule(line, specialSymbols));
 
-            foreach (var element in grammarRulePart.Elements)   //Проходим по каждому элементу подправила
-            {
-                switch (element.Type)
-                {
-                    case ElementType.NonTerminal:
-                        DoValidate(remainingData, element.Rule);    //Если нетерминал, рекурсивно проходим все его подъэлементы
-                        break;
+        //        //Теперь, когда нетерминалы найдены, заполним правые части грамматики
+        //        foreach (var rule in rules)
+        //            rule.BuildRightPart(rules, specialSymbols);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception($"{ex.ToString() + Environment.NewLine + Environment.NewLine}" +
+        //                            $"Состояние грамматики:{Environment.NewLine + this.ToString()}");
+        //    }
+        //}
 
-                    case ElementType.Terminal:                      //Если терминал, удаляем найденный терминал из анализируемой строки
-                        RemoveFromData(remainingData, element.Characters.Length, element, rule);
-                        break;
+        ///// <summary>
+        ///// Проверка входной строки на соответствие правилам грамматики.
+        ///// </summary>
+        ///// <param name="data">Строка с данными для проверки.</param>
+        //public bool ValidateData(string data)
+        //{
+        //    var remainingData = new StringBuilder(data);
+        //    try
+        //    {
+        //        DoValidate(remainingData, rules.First());
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.ToString() + $"{Environment.NewLine + Environment.NewLine}");
+        //    }
 
-                    case ElementType.Range:                         //Если диапазон, то необходимый символ гарантированно находится на первой позиции
-                        WriteName(remainingData.ToString().First());    //Записываем первый символ в таблицу имен
-                        RemoveFromData(remainingData, 1, element, rule);
-                        break;
+        //    if (remainingData.Length > 0)
+        //        throw new Exception($"Разбор завершен, при этом часть строки осталась неразобранна:{Environment.NewLine + remainingData.ToString()}");
 
-                    case ElementType.Empty:                         //Если пустая цепочка ничего не делаем, переходим к следующему элементу/правилу
-                        if (isNameReading)                          //Если велась запись в талицу имен, то закончить запись текущего имени
-                            NextName();
-                        break;
+        //    return true;
+        //}
 
-                    default:
-                        break;
-                }
-            }
-        }
+        ////Рекурсивная валидация строки согласно заданной грамматики
+        //private void DoValidate(StringBuilder remainingData, GrammarRule rule)
+        //{
+        //    var grammarRulePart = rule.GetNext(remainingData.ToString());   //Находим следующее подправило
 
-        //Удаление терминальной части из анализируемой строки с проверкой
-        private void RemoveFromData(StringBuilder remainingData, int lenght, IGrammarElement element, IGrammarRule rule)
-        {
-            if (remainingData.Length < lenght)
-                throw new Exception($"В буфере остались элементы грамматки, при этом разбор строки завершен.{Environment.NewLine}Оставшаяся строка: " +
-                                    $"{Environment.NewLine + remainingData + Environment.NewLine}Разбор закончился на элементе: {element}, правила: {rule + Environment.NewLine}");
-            //Проверка перед удалением для диапазона
-            else if (element.Type == ElementType.Range && !element.Characters.Contains(remainingData.ToString().First()))
-                throw new Exception($"Процесс разбора строки не может быть завершен с помощью данной грамматики.{ Environment.NewLine }Оставшаяся строка: " +
-                                    $"{Environment.NewLine + remainingData + Environment.NewLine}Разбор закончился на элементе: {element}, правила: {rule + Environment.NewLine}");
-            //Проверка перед удалением для терминала
-            else if (element.Type == ElementType.Terminal && remainingData.ToString().Substring(0, element.Characters.Length) != element.Characters)
-                throw new Exception($"Процесс разбора строки не может быть завершен с помощью данной грамматики.{ Environment.NewLine }Оставшаяся строка: " +
-                                    $"{Environment.NewLine + remainingData + Environment.NewLine}Разбор закончился на элементе: {element}, правила: {rule + Environment.NewLine}");
-            else
-                remainingData.Remove(0, lenght);
-        }
+        //    if (grammarRulePart == null)
+        //        throw new Exception($"Данная строка не является частью грамматики. Из правила:{Environment.NewLine + rule.ToString() + Environment.NewLine}" +
+        //                            $"Невозможно осуществить разбор оставшейся части грамматики: {Environment.NewLine + remainingData.ToString() + Environment.NewLine}");
 
-        //Запись считыаемого из диапазона сивола в последний элемент коллекции имен
-        private void WriteName(char c)
-        {
-            if (!isNameReading)
-                isNameReading = true;
+        //    foreach (var element in grammarRulePart.Elements)   //Проходим по каждому элементу подправила
+        //    {
+        //        switch (element.Type)
+        //        {
+        //            case ElementType.NonTerminal:
+        //                DoValidate(remainingData, element.Rule);    //Если нетерминал, рекурсивно проходим все его подъэлементы
+        //                break;
 
-            names.Last().Append(c);
-        }
+        //            case ElementType.Terminal:                      //Если терминал, удаляем найденный терминал из анализируемой строки
+        //                RemoveFromData(remainingData, element.Characters.Length, element, rule);
+        //                break;
 
-        //Проверка имен на совпадение и добавление в коллекцию нового элемента
-        private void NextName()
-        {
-            isNameReading = false;
+        //            case ElementType.Range:                         //Если диапазон, то необходимый символ гарантированно находится на первой позиции
+        //                WriteName(remainingData.ToString().First());    //Записываем первый символ в таблицу имен
+        //                RemoveFromData(remainingData, 1, element, rule);
+        //                break;
 
-            for (int i = 0; i < names.Count() - 1; i++)
-            {
-                if (names.Last().ToString() == names[i].ToString())
-                    throw new Exception($"Конфликт имен. Имя <{names.Last()}> уже было использовано ранее.{Environment.NewLine}");
-            }
+        //            case ElementType.Empty:                         //Если пустая цепочка ничего не делаем, переходим к следующему элементу/правилу
+        //                if (isNameReading)                          //Если велась запись в талицу имен, то закончить запись текущего имени
+        //                    NextName();
+        //                break;
 
-            names.Add(new StringBuilder());
-        }
+        //            default:
+        //                break;
+        //        }
+        //    }
+        //}
+
+        ////Удаление терминальной части из анализируемой строки с проверкой
+        //private void RemoveFromData(StringBuilder remainingData, int lenght, GrammarElement element, GrammarRule rule)
+        //{
+        //    if (remainingData.Length < lenght)
+        //        throw new Exception($"В буфере остались элементы грамматки, при этом разбор строки завершен.{Environment.NewLine}Оставшаяся строка: " +
+        //                            $"{Environment.NewLine + remainingData + Environment.NewLine}Разбор закончился на элементе: {element}, правила: {rule + Environment.NewLine}");
+        //    //Проверка перед удалением для диапазона
+        //    else if (element.Type == ElementType.Range && !element.Characters.Contains(remainingData.ToString().First()))
+        //        throw new Exception($"Процесс разбора строки не может быть завершен с помощью данной грамматики.{ Environment.NewLine }Оставшаяся строка: " +
+        //                            $"{Environment.NewLine + remainingData + Environment.NewLine}Разбор закончился на элементе: {element}, правила: {rule + Environment.NewLine}");
+        //    //Проверка перед удалением для терминала
+        //    else if (element.Type == ElementType.Terminal && remainingData.ToString().Substring(0, element.Characters.Length) != element.Characters)
+        //        throw new Exception($"Процесс разбора строки не может быть завершен с помощью данной грамматики.{ Environment.NewLine }Оставшаяся строка: " +
+        //                            $"{Environment.NewLine + remainingData + Environment.NewLine}Разбор закончился на элементе: {element}, правила: {rule + Environment.NewLine}");
+        //    else
+        //        remainingData.Remove(0, lenght);
+        //}
+
+        ////Запись считыаемого из диапазона сивола в последний элемент коллекции имен
+        //private void WriteName(char c)
+        //{
+        //    if (!isNameReading)
+        //        isNameReading = true;
+
+        //    names.Last().Append(c);
+        //}
+
+        ////Проверка имен на совпадение и добавление в коллекцию нового элемента
+        //private void NextName()
+        //{
+        //    isNameReading = false;
+
+        //    for (int i = 0; i < names.Count() - 1; i++)
+        //    {
+        //        if (names.Last().ToString() == names[i].ToString())
+        //            throw new Exception($"Конфликт имен. Имя <{names.Last()}> уже было использовано ранее.{Environment.NewLine}");
+        //    }
+
+        //    names.Add(new StringBuilder());
+        //}
 
         public override string ToString()
         {
