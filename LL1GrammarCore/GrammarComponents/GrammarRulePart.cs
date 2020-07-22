@@ -10,7 +10,7 @@ namespace LL1GrammarCore
     /// </summary>
     internal class GrammarRulePart
     {
-        internal List<GrammarElement> Elements { get; set; } = new List<GrammarElement>();
+        internal List<GrammarElement> Elements { get; set; }
 
 
         internal GrammarRulePart(string part, SpecialSymbols specialSymbols, List<GrammarRule> rules)
@@ -22,15 +22,74 @@ namespace LL1GrammarCore
             foreach (var rule in rules)
             {
                 var index = sb.ToString().IndexOf(rule.Left);
-                if (index != -1)
+                while (index != -1)
                 {
                     int length = rule.Left.Length;
-                    sb.Replace
+                    HoldPlaces(sb, index, length, specialSymbols.Or);
                     elementsByIndex.Add((index, new GrammarElement(rule, GetActions(sb, index + length, specialSymbols.Or))));
+                    index = sb.ToString().IndexOf(rule.Left);
                 }
             }
 
+            //Находим пустые цепочки
+            while (sb.ToString().IndexOf(specialSymbols.ChainEmpty) != -1)
+            {
+                int i = sb.ToString().IndexOf(specialSymbols.ChainEmpty);
+                sb[i] = specialSymbols.Or;
+                elementsByIndex.Add((i, new GrammarElement(GetActions(sb, i + 1, specialSymbols.Or))));
+            }
 
+            //Находим терминалы - диапазоны
+            while (sb.ToString().IndexOf(specialSymbols.Range) != -1)
+            {
+                int i = sb.ToString().IndexOf(specialSymbols.Range);
+                if (i == 0 || i == sb.Length || sb[i - 1] == specialSymbols.Or || sb[i + 1] == specialSymbols.Or)
+                    throw new Exception($"Диапазон значений в правиле {part} задан неверно.");
+
+                char startChar = sb[i - 1];
+                char endChar = sb[i + 1];
+                HoldPlaces(sb, i - 1, i + 1, specialSymbols.Or);
+
+                elementsByIndex.Add((i, new GrammarElement(startChar, endChar, GetActions(sb, i + 2, specialSymbols.Or))));
+            }
+
+            //Находим терминалы
+            StringBuilder buffer = new StringBuilder();
+            for (int i = 0; i < sb.Length; i++)
+            {
+                if (sb[i] != specialSymbols.Or)
+                {
+                    buffer.Append(sb[i]);
+                    var a = GetActions(sb, i + 1, specialSymbols.Or);
+                    if (a != null)
+                    {
+                        elementsByIndex.Add((i, new GrammarElement(buffer.ToString(), a)));
+                        buffer.Clear();
+                    }
+                }
+                else
+                {
+                    if (buffer.Length > 0)
+                    {
+                        elementsByIndex.Add((i, new GrammarElement(buffer.ToString())));
+                        buffer.Clear();
+                    }
+                }
+            }
+            if (buffer.Length > 0)
+                elementsByIndex.Add((sb.Length, new GrammarElement(buffer.ToString())));
+
+            //Извлекаем полученную коллекцию
+            Elements = new List<GrammarElement>(elementsByIndex.OrderBy(e => e.index).Select(e => e.element));
+        }
+
+        /// <summary>
+        /// Заменяет указанные позиции символов в StringBuilder'e на placeHolder'ы.
+        /// </summary>
+        private void HoldPlaces(StringBuilder sb, int startIndex, int length, char placeHolder)
+        {
+            for (int i = startIndex; i < startIndex + length; i++)
+                sb[i] = placeHolder;
         }
 
         /// <summary>
@@ -51,7 +110,7 @@ namespace LL1GrammarCore
                     {
                         anyFinded = true;
                         result.Add(a.Value);
-                        sb.Remove(findStartedIndex, a.Key.Length);
+                        HoldPlaces(sb, findStartedIndex, a.Key.Length, placeHolder);
                         findStartedIndex += a.Key.Length;
                     }
                 }
@@ -62,111 +121,6 @@ namespace LL1GrammarCore
             else
                 return null;
         }
-
-
-
-
-
-        ///// <summary>
-        ///// Коллекция элементов, содержащихся в данной части правила.
-        ///// </summary>
-        //public List<GrammarElement> Elements { get; set; } = new List<GrammarElement>();
-
-        ///// <summary>
-        ///// Создать экземпляр одной из возможных частей правой части правила.
-        ///// </summary>
-        ///// <param name="grammarPart">Строковое представление.</param>
-        ///// <param name="rules">Список правил с известными нетерминалами.</param>
-        ///// <param name="specialSymbols">Специальные символы.</param>
-        //public GrammarRulePart(string grammarPart, IEnumerable<GrammarRule> rules, SpecialSymbols specialSymbols)
-        //{
-        //    /*Алгоритм разметки элементов будет сводиться к:
-        //       - Нахождению подстрок, отвечающих некоторым требованиям.
-        //       - Добавлению найденной подстроки в коллекцию найденных элементов.
-        //       - Удалением подстроки из начальной строки.
-
-        //    Т.к. необходимо сохранить порядок элементов, количество элементов в коллекции найденных элементов должно быть равно количеству символов
-        //    в анализируемой строке. Найденный элемент будет копироваться в коллекцию по индексу, соответствующему идексу в строке этого элемента.
-        //    В случае, когда найденные элементы не будут представлять собой один символ, в коллекции будут возникать пустые элементы, что конечно не
-        //    является проблемой. Для сохранения порядка элементов, при удалении элементов из анализируемой строки необходимо за место каждого удаленного 
-        //    символова добавлять безопасный символ, который в дальнейшем не будет проанализирован как часть грамматики, а просто будет занимать позицию в строке.*/
-
-        //    //Пустая цепочка
-        //    if (grammarPart.Contains(specialSymbols.ChainEmpty))
-        //    {
-        //        if (grammarPart.Length > 1)
-        //            throw new System.Exception($"Пустая цепочкая не может содержать каких-либо других символов." +
-        //                                       $"{Environment.NewLine}Исключение вызвало: {grammarPart + Environment.NewLine}");
-
-        //        Elements.Add(new GrammarElement());
-        //    }
-        //    else //Цепочка не пуста
-        //    {
-        //        /*Содержит строку для анализа. Найденные элементы будут заменены на <SpecialSymbols.Or>, т.к. данный символ(строка) является единственным 
-        //        гарантированно безопасным символом в данной ситуации, который можно использовать для обозначения элементов, которые уже были проверены.*/
-        //        StringBuilder partBuilder = new StringBuilder(grammarPart);
-
-        //        //Массив(коллекция) размеченных элементов
-        //        GrammarElement[] markuped = new GrammarElement[grammarPart.Length];
-
-        //        //Находим все терминалы-диапазоны (a-z, 0-9 и т.д.)
-        //        int index;
-        //        while ((index = partBuilder.ToString().IndexOf(specialSymbols.Range)) != -1)
-        //        {
-        //            if (index == 0 || index == (grammarPart.Length - 1))
-        //                throw new System.Exception($"Символ диапазона не может стоять в начале или в конце правила или части правила." +
-        //                                           $"{Environment.NewLine}Исключение вызвало: {grammarPart + Environment.NewLine}");
-
-        //            //Добавляем найденный диапазон в коллекцию
-        //            markuped[index] = new GrammarElement(grammarPart.ElementAt(index - 1), grammarPart.ElementAt(index + 1));
-
-        //            //В строке для анализа заменяем найденные элементы на спец символы
-        //            partBuilder.Remove(index - 1, 3);
-        //            partBuilder.Insert(index - 1, string.Join(string.Empty, Enumerable.Repeat(specialSymbols.Or, 3)));
-        //        }
-
-        //        //Находим нетерминалы
-        //        foreach (var rule in rules)
-        //        {
-        //            while ((index = partBuilder.ToString().IndexOf(rule.Left)) != -1)
-        //            {
-        //                markuped[index] = new GrammarElement(rule);
-
-        //                //В строке для анализа заменяем найденные элементы на спец символы
-        //                partBuilder.Remove(index, rule.Left.Length);
-        //                partBuilder.Insert(index, string.Join(string.Empty, Enumerable.Repeat(specialSymbols.Or, rule.Left.Length)));
-        //            }
-        //        }
-
-        //        //Добавляем терминалы
-        //        StringBuilder buffer = new StringBuilder();
-        //        //Все что осталось в строке, является обычными терминалами, проходим строку посимвольно
-        //        for (int i = 0; i < partBuilder.Length; i++)
-        //        {
-        //            if (partBuilder[i] == specialSymbols.Or)
-        //            {
-        //                if (buffer.Length > 0)
-        //                {
-        //                    markuped[i - 1] = new GrammarElement(buffer.ToString());
-        //                    buffer.Clear();
-        //                }
-        //            }
-        //            else
-        //                buffer.Append(partBuilder[i]);
-        //        }
-
-        //        //Если что-то осталось в буфере (последним элементов строке был терминал) закидываем в размечнную коллекцию
-        //        if (buffer.Length != 0)
-        //            markuped[markuped.Count() - 1] = new GrammarElement(buffer.ToString());
-
-        //        //Перемещаем все найденные элементы в коллекцию элементов данного правила, игнорируя пустые
-        //        foreach (var elem in markuped)
-        //        {
-        //            if (elem != null)
-        //                Elements.Add(elem);
-        //        }
-        //    }
-        //}
 
         public override string ToString()
         {

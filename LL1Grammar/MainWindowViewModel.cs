@@ -35,6 +35,7 @@ namespace LL1Grammar
         }
         private void Analyze()
         {
+            Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()));
             //bool result = false;
             //if (Splitter == "" || Or == "" || Range == "" || Empty == "")
             //    MessageBox.Show("Заполните все поля специальных символов.");
@@ -43,7 +44,7 @@ namespace LL1Grammar
             //    try
             //    {
             //        Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()));
-            //        result = gram.ValidateData(InputData);
+            //        //result = gram.ValidateData(InputData);
             //    }
             //    catch (Exception ex)
             //    {

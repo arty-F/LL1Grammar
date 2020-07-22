@@ -29,9 +29,10 @@ namespace LL1GrammarCore
         /// <summary>
         /// Создать экземпляр элемента правила, который является пустой цепочкой.
         /// </summary>
-        public GrammarElement()
+        public GrammarElement(List<Action<object>> actions = null)
         {
             Type = ElementType.Empty;
+            CheckAndReadActions(actions);
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace LL1GrammarCore
         public GrammarElement(string characters, List<Action<object>> actions = null)
         {
             Type = ElementType.Terminal;
-
+            
             switch (characters)
             {
                 case "\\t":
