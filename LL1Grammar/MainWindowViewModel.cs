@@ -1,11 +1,9 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
-using System.Windows;
 using System.Windows.Input;
 using LL1GrammarCore;
 
-namespace LL1Grammar
+namespace LL1GrammarUI
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {

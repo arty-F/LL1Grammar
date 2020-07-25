@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace LL1Grammar
+namespace LL1GrammarUI
 {
     /// <summary>
     /// Interaction logic for App.xaml

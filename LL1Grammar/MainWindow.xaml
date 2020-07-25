@@ -1,9 +1,9 @@
-﻿<Window x:Class="LL1Grammar.MainWindow"
+﻿<Window x:Class="LL1GrammarUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:LL1Grammar"
+        xmlns:local="clr-namespace:LL1GrammarUI"
         mc:Ignorable="d"
         Title="ФроловАА LL(1) Грамматика" Height="450" Width="800">
     <Grid>

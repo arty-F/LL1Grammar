@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace LL1Grammar
+namespace LL1GrammarUI
 {
     public class CommandHandler : ICommand
     {

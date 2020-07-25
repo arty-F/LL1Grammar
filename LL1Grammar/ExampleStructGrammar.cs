@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LL1Grammar
+namespace LL1GrammarUI
 {
     /// <summary>
     /// Представление структуры в виде LL(1) грамматики в языке С#

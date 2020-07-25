@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LL1GrammarCore.Logick
+namespace LL1GrammarCore
 { 
     /// <summary>
     /// Данный класс извлекает элементы грамматики из строки.
