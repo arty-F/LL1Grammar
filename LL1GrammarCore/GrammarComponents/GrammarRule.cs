@@ -18,9 +18,17 @@ namespace LL1GrammarCore
         /// </summary>
         internal List<GrammarRulePart> Right { get; set; } = new List<GrammarRulePart>();
 
-        private List<string> tmpRight = new List<string>();     //необработанная превая часть
+        private List<string> tmpRight = new List<string>();     //необработанная правая часть
         private SpecialSymbols specialSymbols;
 
+        /// <summary>
+        /// Создать экземпляр правила грамматики, при этом будет инициализирована только левая часть правила
+        /// (т.к. на данном этапе отсутствует полный список нетерминалов). Для инициализирования правой части, 
+        /// необходимо вызвать метод BuildRightPart, передав в него полную коллекцию классов <seealso cref="GrammarRule"/>
+        /// с инициализированными левыми частями.
+        /// </summary>
+        /// <param name="line">Строка содержащее правило или несколько подправил.</param>
+        /// <param name="specialSymbols">Специальные символы.</param>
         internal GrammarRule(string line, SpecialSymbols specialSymbols)
         {
             this.specialSymbols = specialSymbols;
@@ -35,6 +43,10 @@ namespace LL1GrammarCore
                 tmpRight.Add(part);
         }
 
+        /// <summary>
+        /// Инициализирует правые части правил грамматики.
+        /// </summary>
+        /// <param name="rules">Полный список возможных правил.</param>
         internal void BuildRightPart(List<GrammarRule> rules)
         {
             foreach (var part in tmpRight)

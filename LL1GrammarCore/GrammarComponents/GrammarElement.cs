@@ -12,24 +12,24 @@ namespace LL1GrammarCore
         /// <summary>
         /// Тип элемента.
         /// </summary>
-        public ElementType Type { get; private set; }
+        internal ElementType Type { get; private set; }
         /// <summary>
         /// Ссылка на не терминал.
         /// </summary>
-        public GrammarRule Rule { get; private set; }
+        internal GrammarRule Rule { get; private set; }
         /// <summary>
         /// Строковой терминал.
         /// </summary>
-        public string Characters { get; private set; }
+        internal string Characters { get; private set; }
         /// <summary>
         /// Действия.
         /// </summary>
-        public List<Action<object>> Actions { get; private set; } = new List<Action<object>>();
+        internal List<Action<object>> Actions { get; private set; } = new List<Action<object>>();
 
         /// <summary>
         /// Создать экземпляр элемента правила, который является пустой цепочкой.
         /// </summary>
-        public GrammarElement(List<Action<object>> actions = null)
+        internal GrammarElement(List<Action<object>> actions = null)
         {
             Type = ElementType.Empty;
             CheckAndReadActions(actions);
@@ -38,7 +38,7 @@ namespace LL1GrammarCore
         /// <summary>
         /// Создать экземпляр элемента правила, который является ссылкой на другое правило-нетерминал.
         /// </summary>
-        public GrammarElement(GrammarRule rule, List<Action<object>> actions = null)
+        internal GrammarElement(GrammarRule rule, List<Action<object>> actions = null)
         {
             Type = ElementType.NonTerminal;
             Rule = rule;
@@ -48,7 +48,7 @@ namespace LL1GrammarCore
         /// <summary>
         /// Создать экземпляр элемента правила, который является терминалом.
         /// </summary>
-        public GrammarElement(string characters, List<Action<object>> actions = null)
+        internal GrammarElement(string characters, List<Action<object>> actions = null)
         {
             Type = ElementType.Terminal;
             
@@ -74,7 +74,7 @@ namespace LL1GrammarCore
         /// </summary>
         /// <param name="startChar">Начальный символ диапазона.</param>
         /// <param name="endChar">Конечный символ диапазона.</param>
-        public GrammarElement(char startChar, char endChar, List<Action<object>> actions = null)
+        internal GrammarElement(char startChar, char endChar, List<Action<object>> actions = null)
         {
             if (startChar > endChar)
                 throw new System.Exception($"Неверный порядок символов в диапазоне.{Environment.NewLine}" +

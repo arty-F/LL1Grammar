@@ -10,26 +10,33 @@ namespace LL1GrammarCore
     /// </summary>
     public class Grammar
     {
-        private List<GrammarRule> rules { get; set; } = new List<GrammarRule>();  //Список правил грамматики
+        /// <summary>
+        /// Список правил грамматики.
+        /// </summary>
+        internal List<GrammarRule> Rules { get; set; } = new List<GrammarRule>();
         private SpecialSymbols specialSymbols;
 
+        /// <summary>
+        /// Создать новый экземпляр грамматики.
+        /// </summary>
+        /// <param name="grammar">Строка с описанием грамматики.</param>
+        /// <param name="specialSymbols">Специальные символы грамматики.</param>
         public Grammar(string grammar, SpecialSymbols specialSymbols)
         {
             this.specialSymbols = specialSymbols;
-            var splittedGrammar = grammar.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
 
-            foreach (var line in splittedGrammar)
-                rules.Add(new GrammarRule(line, this.specialSymbols));
+            foreach (var line in grammar.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+                Rules.Add(new GrammarRule(line, this.specialSymbols));
 
-            foreach (var rule in rules)
-                rule.BuildRightPart(rules);
+            foreach (var rule in Rules)
+                rule.BuildRightPart(Rules);
         }
 
         public override string ToString()
         {
             StringBuilder buffer = new StringBuilder();
 
-            foreach (var rule in rules)
+            foreach (var rule in Rules)
             {
                 buffer.Append(rule.Left + specialSymbols.Splitter);
 
