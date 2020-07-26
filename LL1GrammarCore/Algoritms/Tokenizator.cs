@@ -13,17 +13,19 @@ namespace LL1GrammarCore
         List<GrammarRule> rules;
         SpecialSymbols specialSymbols;
         List<(int index, GrammarElement element)> elementsByIndex;
+        ActionsContainer actions;
         StringBuilder sb;
         string part;
 
         /// <summary>
         /// Создать новый экземпляр токенизатора.
         /// </summary>
-        internal Tokenizator(string part, List<GrammarRule> rules, SpecialSymbols specialSymbols)
+        internal Tokenizator(string part, List<GrammarRule> rules, SpecialSymbols specialSymbols, ActionsContainer actions)
         {
             this.part = part;
             this.rules = rules;
             this.specialSymbols = specialSymbols;
+            this.actions = actions;
             elementsByIndex = new List<(int index, GrammarElement element)>();
             sb = new StringBuilder(part);
         }
@@ -121,7 +123,7 @@ namespace LL1GrammarCore
                 {
                     if (buffer.Length > 0)
                     {
-                        elementsByIndex.Add((i, new GrammarElement(buffer.ToString())));
+                        elementsByIndex.Add((i - 1, new GrammarElement(buffer.ToString())));
                         buffer.Clear();
                     }
                 }
@@ -151,7 +153,7 @@ namespace LL1GrammarCore
             {
                 anyFinded = false;
 
-                foreach (var a in ActionsContainer.Actions)
+                foreach (var a in actions.Actions)
                 {
                     if (sb.Length >= findStartedIndex + a.Key.Length && sb.ToString().Substring(findStartedIndex, a.Key.Length) == a.Key)
                     {

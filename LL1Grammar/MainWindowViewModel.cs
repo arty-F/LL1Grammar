@@ -33,7 +33,8 @@ namespace LL1GrammarUI
         }
         private void Analyze()
         {
-            Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()));
+            Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()), new ActionsContainer());
+            gram.Validate(InputData);
             //bool result = false;
             //if (Splitter == "" || Or == "" || Range == "" || Empty == "")
             //    MessageBox.Show("Заполните все поля специальных символов.");

@@ -15,21 +15,31 @@ namespace LL1GrammarCore
         /// </summary>
         internal List<GrammarRule> Rules { get; set; } = new List<GrammarRule>();
         private SpecialSymbols specialSymbols;
+        private ActionsContainer actions;
 
         /// <summary>
         /// Создать новый экземпляр грамматики.
         /// </summary>
         /// <param name="grammar">Строка с описанием грамматики.</param>
         /// <param name="specialSymbols">Специальные символы грамматики.</param>
-        public Grammar(string grammar, SpecialSymbols specialSymbols)
+        public Grammar(string grammar, SpecialSymbols specialSymbols, ActionsContainer actions)
         {
             this.specialSymbols = specialSymbols;
+            this.actions = actions;
 
             foreach (var line in grammar.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                 Rules.Add(new GrammarRule(line, this.specialSymbols));
 
             foreach (var rule in Rules)
-                rule.BuildRightPart(Rules);
+                rule.BuildRightPart(Rules, actions);
+        }
+
+        /// <summary>
+        /// Проверка входной строки на принадлежность к данной грамматике.
+        /// </summary>
+        public bool Validate(string str)
+        {
+            return new Parser(str, Rules.First(), actions).Parse();
         }
 
         public override string ToString()

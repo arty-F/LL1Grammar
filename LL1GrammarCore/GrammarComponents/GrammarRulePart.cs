@@ -19,9 +19,9 @@ namespace LL1GrammarCore
         /// <param name="part">Часть правила.</param>
         /// <param name="specialSymbols">Специальные символы.</param>
         /// <param name="rules">Список правил, необходим для поиска нетерминалов.</param>
-        internal GrammarRulePart(string part, SpecialSymbols specialSymbols, List<GrammarRule> rules)
+        internal GrammarRulePart(string part, SpecialSymbols specialSymbols, List<GrammarRule> rules, ActionsContainer actions)
         {
-            Elements = new Tokenizator(part, rules, specialSymbols).GetTokens();
+            Elements = new Tokenizator(part, rules, specialSymbols, actions).GetTokens();
         }
 
         public override string ToString()

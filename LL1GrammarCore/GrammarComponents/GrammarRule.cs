@@ -47,10 +47,10 @@ namespace LL1GrammarCore
         /// Инициализирует правые части правил грамматики.
         /// </summary>
         /// <param name="rules">Полный список возможных правил.</param>
-        internal void BuildRightPart(List<GrammarRule> rules)
+        internal void BuildRightPart(List<GrammarRule> rules, ActionsContainer actions)
         {
             foreach (var part in tmpRight)
-                Right.Add(new GrammarRulePart(part, specialSymbols, rules));
+                Right.Add(new GrammarRulePart(part, specialSymbols, rules, actions));
         }
 
         public override string ToString()
