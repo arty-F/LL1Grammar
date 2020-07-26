@@ -71,14 +71,15 @@ namespace LL1GrammarCore
         /// </summary>
         private void TakeEmptyChains()
         {
-            while (sb.ToString().IndexOf(specialSymbols.ChainEmpty) != -1)
+            int index = sb.ToString().IndexOf(specialSymbols.ChainEmpty);
+            while (index != -1)
             {
                 if (sb.Length > specialSymbols.ChainEmpty.ToString().Length)
                     throw new Exception($"В правиле {part} пустая цепочка содержит недопустимые элементы.");
                 
-                int i = sb.ToString().IndexOf(specialSymbols.ChainEmpty);
-                sb[i] = specialSymbols.Or;
-                elementsByIndex.Add((i, new GrammarElement(GetActions(sb, i + 1, specialSymbols.Or))));
+                sb[index] = specialSymbols.Or;
+                elementsByIndex.Add((index, new GrammarElement(GetActions(sb, index + 1, specialSymbols.Or))));
+                index = sb.ToString().IndexOf(specialSymbols.ChainEmpty);
             }
         }
 
@@ -87,17 +88,18 @@ namespace LL1GrammarCore
         /// </summary>
         private void TakeRangeTerminals()
         {
-            while (sb.ToString().IndexOf(specialSymbols.Range) != -1)
+            int index = sb.ToString().IndexOf(specialSymbols.Range);
+            while (index != -1)
             {
-                int i = sb.ToString().IndexOf(specialSymbols.Range);
-                if (i == 0 || i == sb.Length || sb[i - 1] == specialSymbols.Or || sb[i + 1] == specialSymbols.Or)
+                if (index == 0 || index == sb.Length || sb[index - 1] == specialSymbols.Or || sb[index + 1] == specialSymbols.Or)
                     throw new Exception($"Диапазон значений в правиле {part} задан неверно.");
 
-                char startChar = sb[i - 1];
-                char endChar = sb[i + 1];
-                HoldPlaces(sb, i - 1, i + 1, specialSymbols.Or);
+                char startChar = sb[index - 1];
+                char endChar = sb[index + 1];
+                HoldPlaces(sb, index - 1, index + 1, specialSymbols.Or);
 
-                elementsByIndex.Add((i, new GrammarElement(startChar, endChar, GetActions(sb, i + 2, specialSymbols.Or))));
+                elementsByIndex.Add((index, new GrammarElement(startChar, endChar, GetActions(sb, index + 2, specialSymbols.Or))));
+                index = sb.ToString().IndexOf(specialSymbols.Range);
             }
         }
 

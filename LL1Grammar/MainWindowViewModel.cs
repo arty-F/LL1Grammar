@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using LL1GrammarCore;
@@ -11,6 +13,9 @@ namespace LL1GrammarUI
         public string InputData { get; set; }
         public string Result { get; set; } = "Результат анализа";
 
+        public List<ActionContainerWrapper> ContainerWrapper { get; set; } = new List<ActionContainerWrapper>();
+        private ActionsContainer actionsContainer = new ActionsContainer();
+
         public string Splitter { get; set; } = "->";
         public string Or { get; set; } = "|";
         public string Range { get; set; } = "-";
@@ -21,6 +26,11 @@ namespace LL1GrammarUI
             var initializer = new ExampleStructGrammar();
             Grammar = initializer.GetGrammar();
             InputData = initializer.GetData();
+
+            foreach (var item in actionsContainer.Actions)
+            {
+                ContainerWrapper.Add(new ActionContainerWrapper(actionsContainer, item.Key));
+            }
         }
 
         private ICommand analyzeCmd;
@@ -33,7 +43,7 @@ namespace LL1GrammarUI
         }
         private void Analyze()
         {
-            Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()), new ActionsContainer());
+            Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()), actionsContainer);
             gram.Validate(InputData);
             //bool result = false;
             //if (Splitter == "" || Or == "" || Range == "" || Empty == "")
@@ -69,6 +79,13 @@ namespace LL1GrammarUI
         }
         private void Clear()
         {
+            actionsContainer = new ActionsContainer();
+            ContainerWrapper = new List<ActionContainerWrapper>();
+            foreach (var item in actionsContainer.Actions)
+            {
+                ContainerWrapper.Add(new ActionContainerWrapper(actionsContainer, item.Key));
+            }
+
             Grammar = "";
             InputData = "";
             Result = "";
@@ -84,6 +101,7 @@ namespace LL1GrammarUI
             OnPropertyChanged(nameof(Or));
             OnPropertyChanged(nameof(Range));
             OnPropertyChanged(nameof(Empty));
+            OnPropertyChanged(nameof(ContainerWrapper));
         }
 
         #region Property changing

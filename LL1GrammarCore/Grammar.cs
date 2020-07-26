@@ -15,7 +15,6 @@ namespace LL1GrammarCore
         /// </summary>
         internal List<GrammarRule> Rules { get; set; } = new List<GrammarRule>();
         private SpecialSymbols specialSymbols;
-        private ActionsContainer actions;
 
         /// <summary>
         /// Создать новый экземпляр грамматики.
@@ -25,7 +24,6 @@ namespace LL1GrammarCore
         public Grammar(string grammar, SpecialSymbols specialSymbols, ActionsContainer actions)
         {
             this.specialSymbols = specialSymbols;
-            this.actions = actions;
 
             foreach (var line in grammar.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
                 Rules.Add(new GrammarRule(line, this.specialSymbols));
@@ -39,7 +37,7 @@ namespace LL1GrammarCore
         /// </summary>
         public bool Validate(string str)
         {
-            return new Parser(str, Rules.First(), actions).Parse();
+            return new Parser(str, Rules.First()).Parse();
         }
 
         public override string ToString()

@@ -5,13 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LL1GrammarUI"
         mc:Ignorable="d"
-        Title="ФроловАА LL(1) Грамматика" Height="450" Width="800">
+        Title="ФроловАА LL(1) Грамматика" Height="550" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
             <ColumnDefinition Width="0.2*"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="0.4*"/>
+        </Grid.RowDefinitions>
 
         <Grid Margin="5">
             <Grid.RowDefinitions>
@@ -85,6 +89,28 @@
                 <TextBlock  Text="{Binding Path=Result}" TextAlignment="Center" VerticalAlignment="Center"/>
             </Border>
         </Grid>
-        
+
+        <Grid Grid.Row="1" Grid.ColumnSpan="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0.20*"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Действия" VerticalAlignment="Bottom" HorizontalAlignment="Center"/>
+            <Border Grid.Row="1" BorderBrush="LightGray" BorderThickness="1" Margin="5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Path=ContainerWrapper}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Height="auto" Orientation="Horizontal" Margin="2">
+                                    <TextBox Text="{Binding Path=Name, Mode=TwoWay}" Width="50" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                                    <TextBlock Text="{Binding Path=Description}" Margin="5 0 0 0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

@@ -5,16 +5,22 @@ using System.Text;
 
 namespace LL1GrammarCore
 {
+    /// <summary>
+    /// Данный класс выполняет парсинг входной строки в соответствии с заданной грамматикой.
+    /// </summary>
     internal class Parser
     {
         private string data;
-        private ActionsContainer actions;
         private Stack<GrammarElement> stack;
 
-        internal Parser(string data, GrammarRule startedRule, ActionsContainer actions)
+        /// <summary>
+        /// Создать новый экземпляр парсера в основе работы которого лежит метод рекурсивного спуска.
+        /// </summary>
+        /// <param name="data">Строка принадлежность к граматике которой, необходимо определить.</param>
+        /// <param name="startedRule">Стартовое правило грамматики.</param>
+        internal Parser(string data, GrammarRule startedRule)
         {
             this.data = data;
-            this.actions = actions;
             stack = new Stack<GrammarElement>();
             stack.Push(new GrammarElement(startedRule));
         }
@@ -31,7 +37,9 @@ namespace LL1GrammarCore
                 if (stack.Count == 0)
                     throw new Exception($"преждевременно");
 
-                NextElementCheck(stack.Pop(), remainingData);
+                var nextElement = stack.Pop();
+                NextElementCheck(nextElement, remainingData);
+                nextElement.Actions.ForEach(a => a.Invoke(nextElement));    //Вызов прикрепленных действий
             }
 
             if (stack.Count > 0)
