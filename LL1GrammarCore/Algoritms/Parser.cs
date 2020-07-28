@@ -35,7 +35,7 @@ namespace LL1GrammarCore
             while (remainingData.Length > 0)
             {
                 if (stack.Count == 0)
-                    throw new Exception($"преждевременно");
+                    throw new Exception($"На стеке нет элементов, однако осталась неразобрана часть строки:{Environment.NewLine + remainingData.ToString()}");
 
                 var nextElement = stack.Pop();
                 NextElementCheck(nextElement, remainingData);
@@ -43,7 +43,7 @@ namespace LL1GrammarCore
             }
 
             if (stack.Count > 0)
-                throw new Exception($"преждевременно");
+                throw new Exception($"Разбор строки был завершен, однако на стеке остались элементы:{Environment.NewLine + string.Join(Environment.NewLine, stack.ToList())}");
 
             return true;
         }
@@ -64,21 +64,23 @@ namespace LL1GrammarCore
                     if (element.Characters == compareData.ToString().Substring(0, element.Characters.Length))
                         compareData.Remove(0, element.Characters.Length);
                     else
-                        throw new Exception($"невозможно");
+                        throw new Exception($"Данная строка не принадлежит граматике. Оставшаяся строка: {compareData.ToString() + Environment.NewLine}" +
+                            $"Считан элемент со стека: {element + Environment.NewLine}Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}");
                     break;
 
                 case ElementType.Range:
                     if (element.Characters.Contains(compareData.ToString().Substring(0, 1)))
                         compareData.Remove(0, 1);
                     else
-                        throw new Exception($"невозможно");
+                        throw new Exception($"Данная строка не принадлежит граматике. Оставшаяся строка: {compareData.ToString() + Environment.NewLine}" +
+                            $"Считан элемент со стека: {element + Environment.NewLine}Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}");
                     break;
 
                 case ElementType.Empty:
                     break;
 
                 default:
-                    throw new Exception("неизвестный тип");
+                    throw new Exception("Неизвестный тип элемента.");
             }
         }
 
@@ -154,14 +156,14 @@ namespace LL1GrammarCore
         {
             bool result = false;
 
-            if (element.Type == ElementType.Terminal && element.Characters == compareData.Substring(0, element.Characters.Length))
-                return true;
-            else if (element.Type == ElementType.Range && element.Characters.Contains(compareData.Substring(0, 1)))
-                return true;
-            else if (element.Type == ElementType.NonTerminal)
-                foreach (var rulePart in element.Rule.Right)
+                if (element.Type == ElementType.Terminal && element.Characters.Length <= compareData.Length && element.Characters == compareData.Substring(0, element.Characters.Length))
+                    return true;
+                else if (element.Type == ElementType.Range && element.Characters.Contains(compareData.Substring(0, 1)))
+                    return true;
+                else if (element.Type == ElementType.NonTerminal)
+                    foreach (var rulePart in element.Rule.Right)
                         result = result | HasMatch(rulePart.Elements.First(), compareData);
-
+            
             return result;
         }
     }

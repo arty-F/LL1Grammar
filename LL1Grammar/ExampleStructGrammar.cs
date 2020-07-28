@@ -28,11 +28,11 @@ namespace LL1GrammarUI
                    "\tdouble field2;" + Environment.NewLine +
                    "}";
 
-            //grammar = "S->AB" + Environment.NewLine +
-            //          "A->aAa|$" + Environment.NewLine +
-            //          "B->bBb|$" + Environment.NewLine;
+            //grammar = "S->XY<A1>" + Environment.NewLine +
+            //          "X->xXx|$" + Environment.NewLine +
+            //          "Y->yYy|$" + Environment.NewLine;
 
-            //data = "aabb";
+            //data = "xxyy";
         }
 
         public string GetGrammar()
