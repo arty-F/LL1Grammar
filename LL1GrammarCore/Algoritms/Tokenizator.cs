@@ -96,7 +96,7 @@ namespace LL1GrammarCore
 
                 char startChar = sb[index - 1];
                 char endChar = sb[index + 1];
-                HoldPlaces(sb, index - 1, index + 1, specialSymbols.Or);
+                HoldPlaces(sb, index - 1, 3, specialSymbols.Or);
 
                 elementsByIndex.Add((index, new GrammarElement(startChar, endChar, GetActions(sb, index + 2, specialSymbols.Or))));
                 index = sb.ToString().IndexOf(specialSymbols.Range);

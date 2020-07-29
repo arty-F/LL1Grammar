@@ -40,6 +40,10 @@ namespace LL1GrammarCore
         /// </summary>
         internal GrammarElement(GrammarRule rule, List<Action<object>> actions = null)
         {
+            foreach (var part in rule.Right)
+                if (part.Elements.First().Rule == rule)
+                    throw new Exception($"В правиле {rule} онаружена левая рекурсия.");
+
             Type = ElementType.NonTerminal;
             Rule = rule;
             CheckAndReadActions(actions);

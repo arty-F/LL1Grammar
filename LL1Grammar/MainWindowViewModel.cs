@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 using LL1GrammarCore;
 
@@ -43,30 +44,36 @@ namespace LL1GrammarUI
         }
         private void Analyze()
         {
-            Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()), actionsContainer);
-            gram.Validate(InputData);
-            //bool result = false;
-            //if (Splitter == "" || Or == "" || Range == "" || Empty == "")
-            //    MessageBox.Show("Заполните все поля специальных символов.");
-            //else
-            //{
-            //    try
-            //    {
-            //        Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()));
-            //        //result = gram.ValidateData(InputData);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        MessageBox.Show(ex.Message);
-            //    }
+            bool result = false;
 
-            //    if (result)
-            //        Result = "Разбор завершен успешно.";
-            //    else
-            //        Result = "Во время разбора возникла ошибка.";
+            if (Splitter == "" || Or == "" || Range == "" || Empty == "")
+            {
+                MessageBox.Show("Заполните все поля специальных символов.");
+                return;
+            }
 
-            //    OnPropertyChanged(nameof(Result));
-            //}
+            if (ContainerWrapper.Where(c => c.Name == "").Any())
+            {
+                MessageBox.Show("Заполните все идентификаторы действий.");
+                return;
+            }
+                
+            try
+            {
+                Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()), actionsContainer);
+                result = gram.Validate(InputData);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            if (result)
+                Result = "Разбор завершен успешно.";
+            else
+                Result = "Во время разбора возникла ошибка.";
+
+            OnPropertyChanged(nameof(Result));
         }
 
         private ICommand clearCmd;
