@@ -18,15 +18,28 @@ namespace LL1GrammarCore
         private StringBuilder buffer = new StringBuilder();
         private StringBuilder value = new StringBuilder();
         List<(string name, string value)> varTable = new List<(string name, string value)>();
+        List<string> structTable = new List<string>();
 
         public ActionsContainer()
         {
             Actions.Add(("<A1>", "Добавить символ или группу символов в буфер.", ToBuffer));
             Actions.Add(("<A2>", "Очистить буфер.", ClearBuffer));
             Actions.Add(("<A3>", "Объявить новую переменную, имя которой находится в буфере.", NewValueBuffer));
-            Actions.Add(("<A4>", "Считать символ или группу символов как значение в виде строки.", ReadValue));
-            Actions.Add(("<A5>", "Очистить считанное значение.", ClearValue));
-            Actions.Add(("<A6>", "Присвоить значение переменной, имя которой находятся в буфере.", SetValueBuffer));
+            Actions.Add(("<A4>", "Объявить новую структуру, имя которой находится в буфере.", NewStructBuffer));
+            Actions.Add(("<A5>", "Считать символ или группу символов как значение в виде строки.", ReadValue));
+            Actions.Add(("<A6>", "Очистить считанное значение.", ClearValue));
+            Actions.Add(("<A7>", "Присвоить значение переменной, имя которой находятся в буфере.", SetValueBuffer));
+        }
+
+        /// <summary>
+        /// Очистить буферы и таблицы.
+        /// </summary>
+        public void Clear()
+        {
+            buffer.Clear();
+            value.Clear();
+            varTable = new List<(string name, string value)>();
+            structTable = new List<string>();
         }
 
         /// <summary>
@@ -73,6 +86,22 @@ namespace LL1GrammarCore
                 throw new Exception($"Попытка повторного объявления переменной {newVar}.");
 
             varTable.Add((buffer.ToString(), ""));
+        }
+
+        /// <summary>
+        /// Объявить новую структуру, имя которой находится в буфере.
+        /// </summary>
+        internal void NewStructBuffer(object param)
+        {
+            if (buffer.Length == 0)
+                throw new Exception("Буфер пуст.");
+
+            var newStruct = buffer.ToString();
+
+            if (structTable.Where(t => t == newStruct).Any())
+                throw new Exception($"Попытка повторного объявления переменной {newStruct}.");
+
+            structTable.Add(buffer.ToString());
         }
 
         /// <summary>

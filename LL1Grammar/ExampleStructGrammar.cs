@@ -12,36 +12,31 @@ namespace LL1GrammarUI
 
         public ExampleStructGrammar()
         {
-            grammar = "S->int Name = Value" + Environment.NewLine +
-                        "Name->a-z<A1>Name|$<A3>" + Environment.NewLine +
-                        "Value->0-9<A4>Value|$<A6>";
-            data = "int abc = 22";
+            grammar = "StartStruct->~Title~Body~" + Environment.NewLine +
+                      "~-> ~|\\t~|\\n~|$" + Environment.NewLine +
+                      "Title->Mod ~struct ~StructName|~struct ~StructName" + Environment.NewLine +
+                      "Mod->private|public|internal|protected" + Environment.NewLine +
+                      "StructName->a-z<A1>NxtName~<A4><A2>|A-Z<A1>NxtName~<A4><A2>|0-9<A1>NxtName~<A4><A2>|_<A1>NxtName~<A4><A2>" + Environment.NewLine +
+                      "NxtName->a-z<A1>NxtName|A-Z<A1>NxtName|0-9<A1>NxtName|_<A1>NxtName|$" + Environment.NewLine +
+                      "Body->{~Elements~}" + Environment.NewLine +
+                      "Elements->Field~Elements|InnerStruct~Elements|$" + Environment.NewLine +
+                      "InnerStruct->struct ~StructName~Body~" + Environment.NewLine +
+                      "Field->Mod ~Type ~FName~<A3>Value|Type ~FName~<A3>Value" + Environment.NewLine +
+                      "Type->int|float|double|bool|string|char" + Environment.NewLine +
+                      "FName->a-z<A1>NxtName|A-Z<A1>NxtName|0-9<A1>NxtName|_<A1>NxtName" + Environment.NewLine +
+                      "Value->=~NameVal~<A7><A2><A6>;|;" + Environment.NewLine +
+                      "NameVal->a-z<A5>NxtVal|A-Z<A5>NxtVal|0-9<A5>NxtVal" + Environment.NewLine +
+                      "NxtVal->a-z<A5>NxtVal|A-Z<A5>NxtVal|0-9<A5>NxtVal|_<A5>NxtVal|$";
 
-            //grammar = "Struct->_Title_Body_" + Environment.NewLine +
-            //          "_-> _|\\t_|\\n_|$" + Environment.NewLine +
-            //          "Title->Mod _struct _Name|_struct _Name" + Environment.NewLine +
-            //          "Mod->private|public|internal" + Environment.NewLine +
-            //          "Name->A-zN1" + Environment.NewLine +
-            //          "N1->A-zN1|0-9N1|$" + Environment.NewLine +
-            //          "Body->{_Field_}" + Environment.NewLine +
-            //          "Field->Mod _Type _Name_;_Field|Type _Name_;_Field|$" + Environment.NewLine +
-            //          "Type->int|double|char|float";
-
-            //data = "private struct myStruct" + Environment.NewLine +
-            //       "{" + Environment.NewLine +
-            //       "\tpublic int field1;" + Environment.NewLine +
-            //       "\tdouble field2;" + Environment.NewLine +
-            //       "}";
-
-            //grammar = "S->XY" + Environment.NewLine +
-            //          "X->xXx|$" + Environment.NewLine +
-            //          "Y->yYy|$" + Environment.NewLine;
-
-            //data = "xxyy";
-
-            //grammar = "A->aAb|$";
-
-            //data = "aabb";
+            data = "public struct exStruct" + Environment.NewLine +
+                   "{" + Environment.NewLine +
+                   "\tpublic int field1 = 10;" + Environment.NewLine + Environment.NewLine +
+                   "\tstruct inStruct" + Environment.NewLine +
+                   "\t{" + Environment.NewLine +
+                   "\t\tprivate bool innerField = true;" + Environment.NewLine +
+                   "\t}" + Environment.NewLine + Environment.NewLine +
+                   "\tdouble field2;" + Environment.NewLine +
+                   "}";
         }
 
         public string GetGrammar()

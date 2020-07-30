@@ -57,6 +57,8 @@ namespace LL1GrammarUI
                 MessageBox.Show("Заполните все идентификаторы действий.");
                 return;
             }
+
+            actionsContainer.Clear();
                 
             try
             {
