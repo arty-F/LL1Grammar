@@ -26,9 +26,6 @@ namespace LL1GrammarCore
             Actions.Add(("<A2>", "Очистить буфер.", ClearBuffer));
             Actions.Add(("<A3>", "Объявить новую переменную, имя которой находится в буфере.", NewValueBuffer));
             Actions.Add(("<A4>", "Объявить новую структуру, имя которой находится в буфере.", NewStructBuffer));
-            Actions.Add(("<A5>", "Считать символ или группу символов как значение в виде строки.", ReadValue));
-            Actions.Add(("<A6>", "Очистить считанное значение.", ClearValue));
-            Actions.Add(("<A7>", "Присвоить значение переменной, имя которой находятся в буфере.", SetValueBuffer));
         }
 
         /// <summary>
@@ -99,41 +96,9 @@ namespace LL1GrammarCore
             var newStruct = buffer.ToString();
 
             if (structTable.Where(t => t == newStruct).Any())
-                throw new Exception($"Попытка повторного объявления переменной {newStruct}.");
+                throw new Exception($"Попытка повторного объявления структуры {newStruct}.");
 
             structTable.Add(buffer.ToString());
-        }
-
-        /// <summary>
-        /// Считать символ или группу символов как значение в виде строки.
-        /// </summary>
-        internal void ReadValue(object param)
-        {
-            if (param == null)
-                throw new Exception($"Действие {Actions.Where(a => a.Value == ReadValue).First().Key} задано для недопустимого элемента.");
-
-            value.Append(param as string);
-        }
-
-        /// <summary>
-        /// Очистить считанное значение.
-        /// </summary>
-        internal void ClearValue(object param)
-        {
-            value.Clear();
-        }
-
-        /// <summary>
-        /// Присвоить считанное значение переменной, имя которой находятся в буфере.
-        /// </summary>
-        internal void SetValueBuffer(object param)
-        {
-            var v = varTable.Where(t => t.name == buffer.ToString());
-            if (v.Any())
-            {
-                varTable.Remove(v.First());
-                varTable.Add((buffer.ToString(), value.ToString()));
-            }
         }
         #endregion
     }

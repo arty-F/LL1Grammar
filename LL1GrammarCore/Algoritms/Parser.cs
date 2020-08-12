@@ -13,6 +13,9 @@ namespace LL1GrammarCore
         private string data;
         private Stack<GrammarElement> stack;
 
+        private int lineCounter = 1;
+        private int charCounter = 1;
+
         /// <summary>
         /// Создать новый экземпляр парсера в основе работы которого лежит метод рекурсивного спуска.
         /// </summary>
@@ -36,7 +39,8 @@ namespace LL1GrammarCore
                 NextElementCheck(stack.Pop(), remainingData);  
             
             if (remainingData.Length > 0)
-                throw new Exception($"Данная строка не принадлежит граматике. Оставшаяся часть строки:{Environment.NewLine + remainingData.ToString()}");
+                throw new Exception($"Данная строка не принадлежит граматике. Строка №:{lineCounter}, символ №:{charCounter}." +
+                    $"Стек пуст, оставшаяся часть строки:{Environment.NewLine + remainingData.ToString()}");
 
             return true;
         }
@@ -50,38 +54,58 @@ namespace LL1GrammarCore
             switch (element.Type)
             {
                 case ElementType.NonTerminal:
-                    element.Actions.ForEach(a => a.Invoke(null));
+                    ExecuteActions(element, compareData.ToString(), null);
                     UnpackNonTerminal(element, compareData.ToString());
                     break;
 
                 case ElementType.Terminal:
                     if (element.Characters.Length <= compareData.Length && element.Characters == compareData.ToString().Substring(0, element.Characters.Length))
                     {
-                        element.Actions.ForEach(a => a.Invoke(compareData.ToString().Substring(0, element.Characters.Length)));    
+                        var data = compareData.ToString().Substring(0, element.Characters.Length);
+                        RefreshCounters(data);
+                        ExecuteActions(element, compareData.ToString(), data);
                         compareData.Remove(0, element.Characters.Length);
                     }
                     else
-                        throw new Exception($"Данная строка не принадлежит граматике. Оставшаяся строка: {compareData.ToString() + Environment.NewLine}" +
-                            $"Считан элемент со стека: {element + Environment.NewLine}Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}");
+                        throw new Exception(GetExceptionMsg("Данная строка не принадлежит граматике.", element, compareData.ToString()));
                     break;
 
                 case ElementType.Range:
                     if (compareData.Length > 0 && element.Characters.Contains(compareData.ToString().Substring(0, 1)))
                     {
-                        element.Actions.ForEach(a => a.Invoke(compareData.ToString().Substring(0, 1)));
+                        var data = compareData.ToString().Substring(0, 1);
+                        RefreshCounters(data);
+                        ExecuteActions(element, compareData.ToString(), data);
                         compareData.Remove(0, 1);
                     }
                     else
-                        throw new Exception($"Данная строка не принадлежит граматике. Оставшаяся строка: {compareData.ToString() + Environment.NewLine}" +
-                            $"Считан элемент со стека: {element + Environment.NewLine}Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}");
+                        throw new Exception(GetExceptionMsg("Данная строка не принадлежит граматике.", element, compareData.ToString()));
                     break;
 
                 case ElementType.Empty:
-                    element.Actions.ForEach(a => a.Invoke(null));
+                    ExecuteActions(element, compareData.ToString(), null);
                     break;
 
                 default:
                     throw new Exception("Неизвестный тип элемента.");
+            }
+        }
+
+        /// <summary>
+        /// Вызов прикрепленных к элементу грамматики действий.
+        /// </summary>
+        /// <param name="element">Элемент.</param>
+        /// <param name="compareData">Оставшаяся строка.</param>
+        /// <param name="parameters">Параметры действия.</param>
+        private void ExecuteActions(GrammarElement element, string compareData, object parameters)
+        {
+            try
+            {
+                element.Actions.ForEach(a => a.Invoke(parameters));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(GetExceptionMsg(ex.Message, element, compareData.ToString()));
             }
         }
 
@@ -100,17 +124,13 @@ namespace LL1GrammarCore
                     if (emptyPath == null)
                         emptyPath = rulePart;
                     else
-                        throw new Exception($"Грамматика не является LL(1). Неопределенность выбора между пустыми цепочками.Оставшаяся строка: " +
-                            $"{compareData.ToString() + Environment.NewLine}Считан элемент со стека: {element + Environment.NewLine}" +
-                            $"Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}");
+                        throw new Exception(GetExceptionMsg("Грамматика не является LL(1). Неопределенность выбора между пустыми цепочками.", element, compareData));
 
                 if (HasMatch(rulePart.Elements.First(), compareData))
                     if (comparePath == null)
                         comparePath = rulePart;
                     else
-                        throw new Exception($"Грамматика не является LL(1). Неопределенность выбора между правилами {comparePath} и {rulePart}." +
-                            $"Оставшаяся строка: {compareData.ToString() + Environment.NewLine}Считан элемент со стека: " +
-                            $"{element + Environment.NewLine}Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}");
+                        throw new Exception(GetExceptionMsg("Грамматика не является LL(1). Неопределенность выбора между правилами.", element, compareData));
             }
 
             //Приоритет 1: Если есть путь с символьным совпадением
@@ -121,8 +141,7 @@ namespace LL1GrammarCore
                 ToStack(emptyPath.Elements);
             //Приоритет 3: Если не найдено путей, то дальнейший разбор невозможен
             else
-                throw new Exception($"Дальнейший разбор невозможен. Оставшаяся строка: { compareData.ToString() + Environment.NewLine }Считан элемент со стека: " +
-                            $"{element + Environment.NewLine}Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}");
+                throw new Exception(GetExceptionMsg("Дальнейший разбор невозможен.", element, compareData));
         }
 
         /// <summary>
@@ -167,6 +186,35 @@ namespace LL1GrammarCore
                     result = result | HasMatch(rulePart.Elements.First(), compareData);
 
             return result;
+        }
+
+        /// <summary>
+        /// Изменяет значения счетчиков линий и символов, в зависимости от анализируемой части строки.
+        /// </summary>
+        private void RefreshCounters(string data)
+        {
+            if (data == Environment.NewLine)
+            {
+                ++lineCounter;
+                charCounter = 1;
+            }
+            else
+                charCounter += data.Length;
+        }
+
+        /// <summary>
+        /// Дополняет сообщение об ошибке данными о номере строки и символа, в котором возникла ошибка. Также состоянием стека
+        /// и оставшейся строкой разбора.
+        /// </summary>
+        /// <param name="mainMsg">Описание причины возникновения ошибки.</param>
+        /// <param name="element">Елемент, на котором закончился разбор.</param>
+        /// <param name="compareData">Оставшаяся, неразобранная строка.</param>
+        private string GetExceptionMsg(string mainMsg, GrammarElement element, string compareData)
+        {
+            return $"{mainMsg + Environment.NewLine + Environment.NewLine}Исключение возникло при считывании символа или лексемы в " +
+                   $"строке №:{lineCounter}, символ №:{charCounter}.{Environment.NewLine + Environment.NewLine}Оставшаяся строка: " +
+                    $"{Environment.NewLine + compareData + Environment.NewLine + Environment.NewLine}Считан элемент со стека: " +
+                    $"{element + Environment.NewLine}Осталось на стеке: {string.Join(Environment.NewLine, stack.ToList())}";
         }
     }
 }
