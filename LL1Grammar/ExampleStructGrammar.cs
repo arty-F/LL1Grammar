@@ -24,11 +24,12 @@ namespace LL1GrammarUI
                       "InnerStruct->struct ~StructName~Body~" + Environment.NewLine +
                       "Field->Mod ~DataType~Nullable~Array~FName~<A3><A2>RepeatFName;|DataType~Nullable~Array~FName~<A3><A2>RepeatFName;" + Environment.NewLine +
                       "Nullable->?|$" + Environment.NewLine +
-                      "Array->[]|$" + Environment.NewLine +
+                      "Array->[~ArrInner~]~Array|$" + Environment.NewLine +
+                      "ArrInner->,~Arrinner|$" + Environment.NewLine +
                       "RepeatFName->,~FName~<A3><A2>RepeatFName|$" + Environment.NewLine +
                       "DataType->Alias|System.FullTypeName|FullTypeName" + Environment.NewLine +
-                      "Alias->bool|byte|sbyte|char|decimal|double|float|int|uint|long|ulong|short|ushort|object|string|dynamic" + Environment.NewLine +
-                      "FullTypeName->Boolean|Byte|SByte|Char|Decimal|Double|Single|Int32|UInt32|Int64|UInt64|Int16|UInt16|Object|String" + Environment.NewLine +
+                      "Alias->bool<A5>|byte<A5>|sbyte<A5>|char<A5>|decimal<A5>|double<A5>|float<A5>|int<A5>|uint<A5>|long<A5>|ulong<A5>|short<A5>|ushort<A5>|object<A5>|string<A5>|dynamic<A5>" + Environment.NewLine +
+                      "FullTypeName->Boolean<A5>|Byte<A5>|SByte<A5>|Char<A5>|Decimal<A5>|Double<A5>|Single<A5>|Int32<A5>|UInt32<A5>|Int64<A5>|UInt64<A5>|Int16<A5>|UInt16<A5>|Object<A5>|String<A5>" + Environment.NewLine +
                       "FName->a-z<A1>NxtName|A-Z<A1>NxtName|0-9<A1>NxtName|_<A1>NxtName";
 
             data = "public struct exStruct" + Environment.NewLine +

@@ -59,7 +59,7 @@ namespace LL1GrammarUI
             }
 
             actionsContainer.Clear();
-                
+
             try
             {
                 Grammar gram = new Grammar(Grammar, new SpecialSymbols(Splitter, Empty.First(), Or.First(), Range.First()), actionsContainer);
