@@ -44,6 +44,8 @@ namespace LL1GrammarUI
         }
         private void Analyze()
         {
+            //MessageBox.Show(Type.GetType("System.Int32[][,,,]").ToString());
+
             bool result = false;
 
             if (Splitter == "" || Or == "" || Range == "" || Empty == "")

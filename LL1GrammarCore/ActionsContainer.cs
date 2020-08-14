@@ -5,6 +5,21 @@ using System.Text;
 
 namespace LL1GrammarCore
 {
+    struct MyStruct
+    {
+        int a;
+
+        struct Mys
+        {
+            struct a
+            {
+
+            }
+        }
+
+    }
+
+
     /// <summary>
     /// Класс, отвечающий за выполнение действий в грамматике.
     /// </summary>
@@ -24,15 +39,23 @@ namespace LL1GrammarCore
         Dictionary<string, Type> availableTypes;
         List<string> reserverdKeyWords;
 
+        Stack<(string structName, List<string> variableNames)> currentStructVariables = new Stack<(string, List<string>)>();
+
+
         public ActionsContainer()
         {
             Actions.Add(("<A1>", "Добавить символ или группу символов в буфер.", ToBuffer));
             Actions.Add(("<A2>", "Очистить буфер.", ClearBuffer));
             Actions.Add(("<A3>", "Объявить новую переменную, имя которой находится в буфере.", NewValueBuffer));
             Actions.Add(("<A4>", "Объявить новую структуру, имя которой находится в буфере.", NewStructBuffer));
+            Actions.Add(("<A0>", "Окончание структуры.", EndStruct));
             Actions.Add(("<A5>", "Считать тип переменной. Все последующие объявленные переменные будут данного типа.", SetVariableType));
-            
-            availableTypes = new Dictionary<string, Type> { 
+            Actions.Add(("<A6>", "Начало нового массива для считанного типа. Открывающая скобка.", OpenArrayBracket));
+            Actions.Add(("<A7>", "Окончание массива. Закрывающая скобка.", CloseArrayBracket));
+            Actions.Add(("<A8>", "Добавить измерение массиву.", AddArrayDimension));
+            Actions.Add(("<A9>", "Добавить считанному типу возможность принимать значения null.", SetVariableTypeNullable));
+
+            availableTypes = new Dictionary<string, Type> {
                 {"bool", typeof(int) }, { "Boolean", typeof(int) }, { "System.Boolean", typeof(int) },
                 {"byte", typeof(byte) }, { "Byte", typeof(byte) }, { "System.Byte", typeof(byte) },
                 {"sbyte", typeof(sbyte) }, { "SByte", typeof(sbyte) }, { "System.SByte", typeof(sbyte) },
@@ -73,6 +96,7 @@ namespace LL1GrammarCore
             currentType = null;
             currentTypeIsNullable = false;
             currentTypeArrayModifier.Clear();
+            currentStructVariables = new Stack<(string structName, List<string> variableNames)>();
         }
 
         /// <summary>
@@ -83,6 +107,26 @@ namespace LL1GrammarCore
             var i = Actions.IndexOf(Actions.Where(a => a.Key == oldValue).FirstOrDefault());
             if (i != -1)
                 Actions[i] = (newValue, Actions[i].Description, Actions[i].Value);
+        }
+
+        private Type GetCurrentType()
+        {
+            Type type = currentType;
+
+            if (!currentTypeIsNullable && currentTypeArrayModifier.Length == 0)
+                return type;
+            else
+            {
+                string typeStr = type.FullName;
+
+                if (currentTypeArrayModifier.Length > 0)
+                    typeStr += currentTypeArrayModifier.ToString();
+
+                if (currentTypeIsNullable)
+                    typeStr = $"System.Nullable'1[{typeStr}]";
+
+                return Type.GetType(typeStr);
+            }
         }
 
         #region ДЕЙСТВИЯ
@@ -115,8 +159,11 @@ namespace LL1GrammarCore
 
             var newVarName = buffer.ToString();
 
-            if (variableTypes.Where(t => t.Key == newVarName).Any())
+            if (currentStructVariables.Peek().variableNames.Contains(newVarName))
                 throw new Exception($"Попытка повторного объявления переменной {newVarName}.");
+
+            if (currentStructVariables.Peek().structName == newVarName)
+                throw new Exception($"Имя {newVarName} уже задано для структуры.");
 
             if (currentType == null)
                 throw new Exception($"Тип переменной {newVarName} не объявлен.");
@@ -127,11 +174,12 @@ namespace LL1GrammarCore
             if (newVarName[0] != '@')
                 if (reserverdKeyWords.Contains(newVarName))
                     throw new Exception($"Данное имя {newVarName} не может быть использовано.");
-            else
+                else
                 if (newVarName.Length == 1)
                     throw new Exception("Имя переменной не может состоять из одного символа @.");
 
-            variableTypes.Add(buffer.ToString(), currentType);
+            variableTypes.Add(newVarName, GetCurrentType());
+            currentStructVariables.Peek().variableNames.Add(newVarName);
         }
 
         /// <summary>
@@ -151,6 +199,9 @@ namespace LL1GrammarCore
             currentTypeArrayModifier.Clear();
         }
 
+        /// <summary>
+        /// Добавляет к типу возможность принимать значения null.
+        /// </summary>
         internal void SetVariableTypeNullable(object param)
         {
             if (currentType == null)
@@ -162,9 +213,32 @@ namespace LL1GrammarCore
             currentTypeIsNullable = true;
         }
 
-        internal void SetVariableTypeArray(object param)
+        /// <summary>
+        /// Начало нового массива. Открывающая скобка.
+        /// </summary>
+        internal void OpenArrayBracket(object param)
         {
+            currentTypeArrayModifier.Append('[', 0);
+        }
 
+        /// <summary>
+        /// Окончание массива. Закрывающая скобка.
+        /// </summary>
+        internal void CloseArrayBracket(object param)
+        {
+            for (int i = 1; i < currentTypeArrayModifier.Length; i++)
+                if (i == currentTypeArrayModifier.Length)
+                    currentTypeArrayModifier.Append("]");
+                else if (currentTypeArrayModifier[i] == '[')
+                    currentTypeArrayModifier.Append(']', i);
+        }
+
+        /// <summary>
+        /// Добавление одного измерения текущему массиву.
+        /// </summary>
+        internal void AddArrayDimension(object param)
+        {
+            currentTypeArrayModifier.Append(',', 1);
         }
 
         /// <summary>
@@ -180,7 +254,24 @@ namespace LL1GrammarCore
             if (structNames.Where(t => t == newStruct).Any())
                 throw new Exception($"Попытка повторного объявления структуры {newStruct}.");
 
-            structNames.Add(buffer.ToString());
+            if (currentStructVariables.Count > 0)
+                if (currentStructVariables.Peek().variableNames.Contains(newStruct))
+                    throw new Exception($"Имя структуры {newStruct} конфликтует с объявленной ранее переменной.");
+
+            structNames.Add(newStruct);
+
+            currentStructVariables.Push((newStruct, new List<string>()));
+        }
+
+        /// <summary>
+        /// Окончание текущей структуры.
+        /// </summary>
+        internal void EndStruct(object param)
+        {
+            if (currentStructVariables.Count > 0)
+                currentStructVariables.Pop();
+            else
+                throw new Exception("Нет начатых структур.");
         }
         #endregion
     }

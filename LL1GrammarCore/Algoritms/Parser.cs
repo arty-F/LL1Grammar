@@ -115,16 +115,13 @@ namespace LL1GrammarCore
         private void UnpackNonTerminal(GrammarElement element, string compareData)
         {
             GrammarRulePart comparePath = null;
-            GrammarRulePart emptyPath = null;
+            List<GrammarRulePart> emptyPathes = new List<GrammarRulePart>();
 
             //Проверка каждого первого элемент подправил на совпадение и возможность генерации пустых цепочек
             foreach (var rulePart in element.Rule.Right)
             {
                 if (CanBeEmpty(rulePart.Elements.First()))
-                    if (emptyPath == null)
-                        emptyPath = rulePart;
-                    else
-                        throw new Exception(GetExceptionMsg("Грамматика не является LL(1). Неопределенность выбора между пустыми цепочками.", element, compareData));
+                        emptyPathes.Add(rulePart);
 
                 if (HasMatch(rulePart.Elements.First(), compareData))
                     if (comparePath == null)
@@ -136,10 +133,13 @@ namespace LL1GrammarCore
             //Приоритет 1: Если есть путь с символьным совпадением
             if (comparePath != null)
                 ToStack(comparePath.Elements);
-            //Приоритет 2: Если дальнейший разбор возможен только по пустой цепочке
-            else if (emptyPath != null)
-                ToStack(emptyPath.Elements);
-            //Приоритет 3: Если не найдено путей, то дальнейший разбор невозможен
+            //Приоритет 2: Если дальнейший разбор возможен только по единственной пустой цепочке
+            else if (emptyPathes.Count == 1)
+                ToStack(emptyPathes.First().Elements);
+            //Приоритет 3: Если имеются несколько пустых цепочек
+            else if (emptyPathes.Count > 1)
+                throw new Exception(GetExceptionMsg("Грамматика не является LL(1). Неопределенность выбора между пустыми цепочками.", element, compareData));
+            //Приоритет 4: Если не найдено путей, то дальнейший разбор невозможен
             else
                 throw new Exception(GetExceptionMsg("Дальнейший разбор невозможен.", element, compareData));
         }
