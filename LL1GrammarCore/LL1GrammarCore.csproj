@@ -42,7 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionsContainer.cs" />
+    <Compile Include="Algoritms\Table.cs" />
     <Compile Include="Algoritms\Parser.cs" />
+    <Compile Include="Algoritms\TableBuilder.cs" />
     <Compile Include="GrammarComponents\ElementType.cs" />
     <Compile Include="Algoritms\Tokenizator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

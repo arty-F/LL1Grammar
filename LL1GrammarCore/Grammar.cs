@@ -10,6 +10,7 @@ namespace LL1GrammarCore
     /// </summary>
     public class Grammar
     {
+        internal GrammarElement StartedElement { get; set; }
         /// <summary>
         /// Список правил грамматики.
         /// </summary>
@@ -30,6 +31,8 @@ namespace LL1GrammarCore
 
             foreach (var rule in Rules)
                 rule.BuildRightPart(Rules, actions);
+
+            StartedElement = new GrammarElement(Rules.FirstOrDefault());
         }
 
         /// <summary>
@@ -37,7 +40,8 @@ namespace LL1GrammarCore
         /// </summary>
         public bool Validate(string str)
         {
-            return new Parser(str, Rules.First()).Parse();
+            Table table = new Table(new TableBuilder().Build(StartedElement));
+            return new Parser(str, StartedElement, table).Parse();
         }
 
         public override string ToString()

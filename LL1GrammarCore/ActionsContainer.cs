@@ -1,25 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace LL1GrammarCore
 {
-    struct MyStruct
-    {
-        int a;
-
-        struct Mys
-        {
-            struct a
-            {
-
-            }
-        }
-
-    }
-
-
     /// <summary>
     /// Класс, отвечающий за выполнение действий в грамматике.
     /// </summary>
@@ -119,11 +105,11 @@ namespace LL1GrammarCore
             {
                 string typeStr = type.FullName;
 
-                if (currentTypeArrayModifier.Length > 0)
-                    typeStr += currentTypeArrayModifier.ToString();
-
                 if (currentTypeIsNullable)
                     typeStr = $"System.Nullable'1[{typeStr}]";
+
+                if (currentTypeArrayModifier.Length > 0)
+                    typeStr += currentTypeArrayModifier.ToString();
 
                 return Type.GetType(typeStr);
             }
@@ -218,7 +204,7 @@ namespace LL1GrammarCore
         /// </summary>
         internal void OpenArrayBracket(object param)
         {
-            currentTypeArrayModifier.Append('[', 0);
+            currentTypeArrayModifier.Insert(0, '[');
         }
 
         /// <summary>
@@ -226,11 +212,18 @@ namespace LL1GrammarCore
         /// </summary>
         internal void CloseArrayBracket(object param)
         {
-            for (int i = 1; i < currentTypeArrayModifier.Length; i++)
+            int length = currentTypeArrayModifier.Length;
+            for (int i = 1; i <= length; i++)
                 if (i == currentTypeArrayModifier.Length)
+                {
                     currentTypeArrayModifier.Append("]");
+                    break;
+                }
                 else if (currentTypeArrayModifier[i] == '[')
-                    currentTypeArrayModifier.Append(']', i);
+                {
+                    currentTypeArrayModifier.Insert(i, "]");
+                    break;
+                }
         }
 
         /// <summary>
@@ -238,7 +231,7 @@ namespace LL1GrammarCore
         /// </summary>
         internal void AddArrayDimension(object param)
         {
-            currentTypeArrayModifier.Append(',', 1);
+            currentTypeArrayModifier.Insert(1, ',');
         }
 
         /// <summary>

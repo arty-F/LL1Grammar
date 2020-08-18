@@ -11,21 +11,23 @@ namespace LL1GrammarCore
     internal class Parser
     {
         private string data;
+        private Table table;
         private Stack<GrammarElement> stack;
 
         private int lineCounter = 1;
         private int charCounter = 1;
 
         /// <summary>
-        /// Создать новый экземпляр парсера в основе работы которого лежит метод рекурсивного спуска.
+        /// Создать новый экземпляр парсера осуществляющего LL(1) разбор по таблице разбора.
         /// </summary>
         /// <param name="data">Строка принадлежность к граматике которой, необходимо определить.</param>
         /// <param name="startedRule">Стартовое правило грамматики.</param>
-        internal Parser(string data, GrammarRule startedRule)
+        internal Parser(string data, GrammarElement startedElement, Table table)
         {
             this.data = data;
+            this.table = table;
             stack = new Stack<GrammarElement>();
-            stack.Push(new GrammarElement(startedRule));
+            stack.Push(startedElement);
         }
 
         /// <summary>
@@ -110,38 +112,19 @@ namespace LL1GrammarCore
         }
 
         /// <summary>
-        /// Открывает нетерминал, проверяя возможные символьные совпадения, использую рекурсивный спуск.
+        /// Открывает нетерминал, проверяя возможные символьные совпадения, использую таблицу разбора.
         /// </summary>
         private void UnpackNonTerminal(GrammarElement element, string compareData)
         {
-            GrammarRulePart comparePath = null;
-            List<GrammarRulePart> emptyPathes = new List<GrammarRulePart>();
-
-            //Проверка каждого первого элемент подправил на совпадение и возможность генерации пустых цепочек
-            foreach (var rulePart in element.Rule.Right)
+            try
             {
-                if (CanBeEmpty(rulePart.Elements.First()))
-                        emptyPathes.Add(rulePart);
-
-                if (HasMatch(rulePart.Elements.First(), compareData))
-                    if (comparePath == null)
-                        comparePath = rulePart;
-                    else
-                        throw new Exception(GetExceptionMsg("Грамматика не является LL(1). Неопределенность выбора между правилами.", element, compareData));
+                ToStack(table.Unfold(element, compareData).Elements);
             }
-
-            //Приоритет 1: Если есть путь с символьным совпадением
-            if (comparePath != null)
-                ToStack(comparePath.Elements);
-            //Приоритет 2: Если дальнейший разбор возможен только по единственной пустой цепочке
-            else if (emptyPathes.Count == 1)
-                ToStack(emptyPathes.First().Elements);
-            //Приоритет 3: Если имеются несколько пустых цепочек
-            else if (emptyPathes.Count > 1)
-                throw new Exception(GetExceptionMsg("Грамматика не является LL(1). Неопределенность выбора между пустыми цепочками.", element, compareData));
-            //Приоритет 4: Если не найдено путей, то дальнейший разбор невозможен
-            else
-                throw new Exception(GetExceptionMsg("Дальнейший разбор невозможен.", element, compareData));
+            catch (Exception ex)
+            {
+                throw new Exception(GetExceptionMsg(ex.Message, element, compareData.ToString()));
+            }
+            
         }
 
         /// <summary>
@@ -152,40 +135,6 @@ namespace LL1GrammarCore
             var elems = new List<GrammarElement>(elements);
             elems.Reverse(); 
             elems.ForEach(e => stack.Push(e));
-        }
-
-        /// <summary>
-        /// Определяет, с помощью рекурсивного спуска, может ли данный элемент генирировать пустую цепочку.
-        /// </summary>
-        private bool CanBeEmpty(GrammarElement element)
-        {
-            bool result = false;
-
-            if (element.Type == ElementType.Empty)
-                return true;
-            else if (element.Type == ElementType.NonTerminal)
-                foreach (var rulePart in element.Rule.Right)
-                    result = result | CanBeEmpty(rulePart.Elements.First());
-
-            return result;
-        }
-
-        /// <summary>
-        /// Определяет, с помощью рекурсивного спуска, имеет ли данный элемент посимвольное совпадение с входной строкой.
-        /// </summary>
-        private bool HasMatch(GrammarElement element, string compareData)
-        {
-            bool result = false;
-
-            if (element.Type == ElementType.Terminal && element.Characters.Length <= compareData.Length && element.Characters == compareData.Substring(0, element.Characters.Length))
-                return true;
-            else if (element.Type == ElementType.Range && compareData.Length > 0 && element.Characters.Contains(compareData.Substring(0, 1)))
-                return true;
-            else if (element.Type == ElementType.NonTerminal)
-                foreach (var rulePart in element.Rule.Right)
-                    result = result | HasMatch(rulePart.Elements.First(), compareData);
-
-            return result;
         }
 
         /// <summary>

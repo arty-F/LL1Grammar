@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using LL1GrammarCore;
@@ -44,7 +45,11 @@ namespace LL1GrammarUI
         }
         private void Analyze()
         {
-            //MessageBox.Show(Type.GetType("System.Int32[][,,,]").ToString());
+            //var a = typeof(int[,,][,,,]).ToString();
+            MessageBox.Show(typeof(int?[]).ToString());
+            MessageBox.Show(typeof(int?[]).AssemblyQualifiedName);
+            //MessageBox.Show(Type.GetType("System.Nullable'1[System.Int32][,,,][,,]").AssemblyQualifiedName);
+
 
             bool result = false;
 

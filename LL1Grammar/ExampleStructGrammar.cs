@@ -23,7 +23,7 @@ namespace LL1GrammarUI
                       "Elements->Field~Elements|InnerStruct~Elements|$" + Environment.NewLine +
                       "InnerStruct->struct ~StructName~Body~" + Environment.NewLine +
                       "Field->Mod ~DataType~Nullable~Array~FName~<A3><A2>RepeatFName;|DataType~Nullable~Array~FName~<A3><A2>RepeatFName;" + Environment.NewLine +
-                      "Nullable->?|$" + Environment.NewLine +
+                      "Nullable->?<A9>|$" + Environment.NewLine +
                       "Array->[<A6>~ArrInner~]<A7>~Array|$" + Environment.NewLine +
                       "ArrInner->,<A8>~ArrInner|$" + Environment.NewLine +
                       "RepeatFName->,~FName~<A3><A2>RepeatFName|$" + Environment.NewLine +
