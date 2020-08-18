@@ -106,7 +106,7 @@ namespace LL1GrammarCore
                 string typeStr = type.FullName;
 
                 if (currentTypeIsNullable)
-                    typeStr = $"System.Nullable'1[{typeStr}]";
+                    typeStr = $"System.Nullable`1[{typeStr}]";
 
                 if (currentTypeArrayModifier.Length > 0)
                     typeStr += currentTypeArrayModifier.ToString();

@@ -45,12 +45,6 @@ namespace LL1GrammarUI
         }
         private void Analyze()
         {
-            //var a = typeof(int[,,][,,,]).ToString();
-            MessageBox.Show(typeof(int?[]).ToString());
-            MessageBox.Show(typeof(int?[]).AssemblyQualifiedName);
-            //MessageBox.Show(Type.GetType("System.Nullable'1[System.Int32][,,,][,,]").AssemblyQualifiedName);
-
-
             bool result = false;
 
             if (Splitter == "" || Or == "" || Range == "" || Empty == "")
